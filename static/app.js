@@ -26,6 +26,16 @@ class RealtimeDemo {
         this.messagesContent = document.getElementById('messagesContent');
         this.eventsContent = document.getElementById('eventsContent');
         this.toolsContent = document.getElementById('toolsContent');
+    
+        // Show warning for Firefox users
+        if (navigator.userAgent.toLowerCase().includes('firefox')) {
+            const warning = document.createElement('div');
+            warning.style.color = 'red';
+            warning.style.fontWeight = 'bold';
+            warning.style.margin = '12px 0';
+            warning.textContent = '⚠️ Audio input is not supported in Firefox because of the fixed sample rate of mic input. Please use Chrome or Edge.';
+            document.body.insertBefore(warning, document.body.firstChild);
+    }
     }
     
     setupEventListeners() {
@@ -134,24 +144,23 @@ class RealtimeDemo {
                 } 
             });
             
-            this.audioContext = new AudioContext({ sampleRate: 24000 });
+            this.audioContext = new AudioContext();
             const source = this.audioContext.createMediaStreamSource(this.stream);
             
             // Create a script processor to capture audio data
-            this.processor = this.audioContext.createScriptProcessor(4096, 1, 1);
+            await this.audioContext.audioWorklet.addModule('processor.js');
+            this.processor = new AudioWorkletNode(this.audioContext, 'audio-processor');
             source.connect(this.processor);
             this.processor.connect(this.audioContext.destination);
-            
-            this.processor.onaudioprocess = (event) => {
+            console.log('AudioContext sample rate:', this.audioContext.sampleRate);
+
+            this.processor.port.onmessage = (event) => {
                 if (!this.isMuted && this.ws && this.ws.readyState === WebSocket.OPEN) {
-                    const inputBuffer = event.inputBuffer.getChannelData(0);
+                    const inputBuffer = event.data;
                     const int16Buffer = new Int16Array(inputBuffer.length);
-                    
-                    // Convert float32 to int16
                     for (let i = 0; i < inputBuffer.length; i++) {
                         int16Buffer[i] = Math.max(-32768, Math.min(32767, inputBuffer[i] * 32768));
                     }
-                    
                     this.ws.send(JSON.stringify({
                         type: 'audio',
                         data: Array.from(int16Buffer)
