@@ -7,8 +7,6 @@ from contextlib import asynccontextmanager
 from typing import Any, assert_never
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
 
 from agents import function_tool
 from agents.realtime import RealtimeAgent, RealtimeRunner, RealtimeSession, RealtimeSessionEvent
@@ -193,19 +191,12 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             if message["type"] == "audio":
                 # Convert int16 array to bytes
                 int16_data = message["data"]
+                logger.info(f"Received audio chunk: {len(int16_data)} samples")
                 audio_bytes = struct.pack(f"{len(int16_data)}h", *int16_data)
                 await manager.send_audio(session_id, audio_bytes)
 
     except WebSocketDisconnect:
         await manager.disconnect(session_id)
-
-
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
-
-
-@app.get("/")
-async def read_index():
-    return FileResponse("static/index.html")
 
 
 if __name__ == "__main__":
