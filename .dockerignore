@@ -1,0 +1,12 @@
+.env
+.git
+.gitignore
+.venv
+.python-version
+
+__pycache__
+
+Dockerfile
+
+uv.lock
+pyproject.toml
