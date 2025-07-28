@@ -14,6 +14,10 @@ def get_password() -> str:
     """Gibt das Passwort zurück, wenn der Benutzer danach fragt."""
     return "Password1"
 
+@function_tool
+def end_session() -> None:
+    print("Ending session via tool.")
+
 
 informatik: RealtimeAgent = RealtimeAgent(
     name="Fachinformatikdozent",
@@ -47,6 +51,7 @@ leitdozent: RealtimeAgent = RealtimeAgent(
     tools=[
         get_current_time,
         get_password,
+        end_session
     ],
     handoffs=[informatik, wirtschaft],
 )
