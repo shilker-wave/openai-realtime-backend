@@ -8,10 +8,11 @@ from fastapi import WebSocket
 
 from agents.realtime import RealtimeRunner, RealtimeSession, RealtimeSessionEvent
 
-from utils.agents import agent
+from utils.agents import leitdozent
 
 logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
+
 
 class RealtimeWebSocketManager:
     def __init__(self) -> None:
@@ -19,12 +20,13 @@ class RealtimeWebSocketManager:
         self.session_contexts: Dict[str, Any] = {}
         self.websockets: Dict[str, WebSocket] = {}
 
+
     async def connect(self, websocket: WebSocket, session_id: str) -> None:
         await websocket.accept()
         self.websockets[session_id] = websocket
 
         runner: RealtimeRunner = RealtimeRunner(
-            starting_agent=agent,
+            starting_agent=leitdozent,
             config={
             "model_settings": {
                 "model_name": "gpt-4o-mini-realtime-preview-2024-12-17",
@@ -50,6 +52,7 @@ class RealtimeWebSocketManager:
         # Start event processing task
         asyncio.create_task(self._process_events(session_id))
 
+
     async def disconnect(self, session_id: str) -> None:
         if session_id in self.session_contexts:
             await self.session_contexts[session_id].__aexit__(None, None, None)
@@ -59,9 +62,11 @@ class RealtimeWebSocketManager:
         if session_id in self.websockets:
             del self.websockets[session_id]
 
+
     async def send_audio(self, session_id: str, audio_bytes: bytes) -> None:
         if session_id in self.active_sessions:
             await self.active_sessions[session_id].send_audio(audio_bytes)
+
 
     async def _process_events(self, session_id: str) -> None:
         try:
@@ -73,6 +78,7 @@ class RealtimeWebSocketManager:
                 await websocket.send_text(json.dumps(event_data))
         except Exception as e:
             logger.error(f"Error processing events for session {session_id}: {e}")
+
 
     async def _serialize_event(self, event: RealtimeSessionEvent) -> Dict[str, Any]:
         base_event: Dict[str, Any] = {
