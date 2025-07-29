@@ -18,6 +18,12 @@ class RealtimeWebSocketManager:
         self.active_sessions: Dict[str, RealtimeSession] = {}
         self.session_contexts: Dict[str, Any] = {}
         self.websockets: Dict[str, WebSocket] = {}
+        self.sample_rates: Dict[str, int] = {}
+
+
+    def set_sample_rate(self, session_id: str, sample_rate: int) -> None:
+            logger.info(f"Sample rate for session {session_id}: {sample_rate}")
+            self.sample_rates[session_id] = sample_rate
 
 
     async def connect(self, websocket: WebSocket, session_id: str) -> None:
