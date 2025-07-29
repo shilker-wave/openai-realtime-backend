@@ -13,7 +13,6 @@ from utils.agents import leitdozent
 logging.basicConfig(level=logging.INFO)
 logger: logging.Logger = logging.getLogger(__name__)
 
-
 class RealtimeWebSocketManager:
     def __init__(self) -> None:
         self.active_sessions: Dict[str, RealtimeSession] = {}
@@ -77,10 +76,6 @@ class RealtimeWebSocketManager:
                 event_data: Dict[str, Any] = await self._serialize_event(event)
 
                 await websocket.send_text(json.dumps(event_data))
-
-                if event_data["tool"] and event_data["tool"] == "end_session":
-                    self.disconnect(session_id)
-                    print("Disconnected by tool...")
 
         except Exception as e:
             logger.error(f"Error processing events for session {session_id}: {e}")
