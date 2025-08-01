@@ -1,6 +1,7 @@
 from agents import function_tool
 from agents.realtime import RealtimeAgent
 from datetime import datetime
+import requests
 
 
 @function_tool
@@ -13,6 +14,25 @@ def get_current_time() -> str:
 def get_password() -> str:
     """Gibt das Passwort zurück, wenn der Benutzer danach fragt."""
     return "Password1"
+
+@function_tool
+def get_random_cat_fact() -> str:
+    """Gibt einen zufälligen Fakt zum Thema 'Katze' zurück."""
+    try:
+        api_url = "https://catfact.ninja/fact"
+        response = requests.get(api_url)
+        return response.json()['fact']
+    except:
+        return "Ein Fehler beim Api-Call ist aufgetreten."
+    
+@function_tool
+def get_github_information(username: str) -> str:
+    try:
+        api_url = f"https://api.github.com/users/{username}"
+        response = requests.get(api_url)
+        return response.json()
+    except:
+        return "Ein Fehler beim Api-Call ist aufgetreten."
 
 
 informatik: RealtimeAgent = RealtimeAgent(
@@ -93,6 +113,8 @@ leitdozent: RealtimeAgent = RealtimeAgent(
     tools=[
         get_current_time,
         get_password,
+        get_random_cat_fact,
+        get_github_information
     ],
     handoffs=[informatik, wirtschaft],
 )
